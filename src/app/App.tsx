@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Header } from './components/Header';
-import { HeroSection } from './components/HeroSection';
-import { WalletConnect } from './components/WalletConnect';
-import { ScannerUI, ScanResults } from './components/ScannerUI';
-import { ResultsDashboard } from './components/ResultsDashboard';
-import { FeaturesSection } from './components/FeaturesSection';
-import { HowItWorks } from './components/HowItWorks';
-import { TrustSection } from './components/TrustSection';
-import { Footer } from './components/Footer';
-import { ScrollToTop } from './components/ScrollToTop';
+import { useState, useEffect } from "react";
+import { Header } from "./components/Header";
+import { HeroSection } from "./components/HeroSection";
+import { WalletConnect } from "./components/WalletConnect";
+import { ScannerUI, ScanResults } from "./components/ScannerUI";
+import { ResultsDashboard } from "./components/ResultsDashboard";
+import { FeaturesSection } from "./components/FeaturesSection";
+import { HowItWorks } from "./components/HowItWorks";
+import { TrustSection } from "./components/TrustSection";
+import { Footer } from "./components/Footer";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 declare global {
   interface Window {
@@ -19,8 +19,8 @@ declare global {
 export default function App() {
   const [showWalletConnect, setShowWalletConnect] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
-  const [balance, setBalance] = useState('0');
+  const [walletAddress, setWalletAddress] = useState("");
+  const [balance, setBalance] = useState("0");
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState<ScanResults | null>(null);
 
@@ -39,7 +39,7 @@ export default function App() {
           await fetchBalance(address);
         }
       } catch (error) {
-        console.error('Error checking wallet connection:', error);
+        console.error("Error checking wallet connection:", error);
       }
     }
   };
@@ -50,13 +50,13 @@ export default function App() {
         // Get TRX balance
         const trxBalance = await window.tronWeb.trx.getBalance(address);
         const trxInSun = window.tronWeb.fromSun(trxBalance);
-        
+
         // For demo purposes, we'll show a mock USDT balance
         const mockUsdtBalance = (Math.random() * 10000).toFixed(2);
         setBalance(mockUsdtBalance);
       }
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      console.error("Error fetching balance:", error);
       // Set mock balance on error
       setBalance((Math.random() * 10000).toFixed(2));
     }
@@ -68,7 +68,7 @@ export default function App() {
     setTimeout(() => {
       window.scrollTo({
         top: window.innerHeight,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }, 100);
   };
@@ -77,7 +77,9 @@ export default function App() {
     try {
       // Check if TronLink is installed
       if (!window.tronWeb) {
-        alert('TronLink wallet not detected. Please install TronLink extension.');
+        alert(
+          "TronLink wallet not detected. Please install TronLink extension.",
+        );
         return;
       }
 
@@ -87,47 +89,50 @@ export default function App() {
         setWalletAddress(address);
         setIsConnected(true);
         await fetchBalance(address);
-        
+
         // Start scanning after connection
         setTimeout(() => {
           setIsScanning(true);
           window.scrollTo({
             top: window.innerHeight * 1.5,
-            behavior: 'smooth'
+            behavior: "smooth",
           });
         }, 1500);
       } else {
         // TronLink is installed but not ready, request connection
-        const res = await window.tronWeb.request({ method: 'tron_requestAccounts' });
+        const res = await window.tronWeb.request({
+          method: "tron_requestAccounts",
+        });
         if (res.code === 200) {
           const address = window.tronWeb.defaultAddress.base58;
           setWalletAddress(address);
           setIsConnected(true);
           await fetchBalance(address);
-          
+
           setTimeout(() => {
             setIsScanning(true);
             window.scrollTo({
               top: window.innerHeight * 1.5,
-              behavior: 'smooth'
+              behavior: "smooth",
             });
           }, 1500);
         }
       }
     } catch (error) {
-      console.error('Error connecting wallet:', error);
-      
+      console.error("Error connecting wallet:", error);
+
       // For demo purposes, simulate connection with mock data
-      const mockAddress = 'TX9Kqb' + Math.random().toString(36).substring(2, 15).toUpperCase();
+      const mockAddress =
+        "TX9Kqb" + Math.random().toString(36).substring(2, 15).toUpperCase();
       setWalletAddress(mockAddress);
       setIsConnected(true);
       setBalance((Math.random() * 10000).toFixed(2));
-      
+
       setTimeout(() => {
         setIsScanning(true);
         window.scrollTo({
           top: window.innerHeight * 1.5,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }, 1500);
     }
@@ -135,8 +140,8 @@ export default function App() {
 
   const handleDisconnect = () => {
     setIsConnected(false);
-    setWalletAddress('');
-    setBalance('0');
+    setWalletAddress("");
+    setBalance("0");
     setIsScanning(false);
     setScanResults(null);
   };
@@ -144,18 +149,21 @@ export default function App() {
   const handleScanComplete = (results: ScanResults) => {
     setScanResults(results);
     setIsScanning(false);
-    
+
     // Scroll to results
     setTimeout(() => {
       window.scrollTo({
         top: window.innerHeight * 2,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }, 500);
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#e6e6e6]" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div
+      className="min-h-screen bg-[#050505] text-[#e6e6e6]"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
       {/* Header */}
       <Header />
 

