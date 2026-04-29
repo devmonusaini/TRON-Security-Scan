@@ -103,14 +103,17 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
 
       if (!wc) throw new Error("WalletConnect not found");
 
-      await select(wc.adapter.name as any);
-      await connect();
+      if (wallet?.adapter.name !== wc.adapter.name) {
+        select(wc.adapter.name as any);
+      }
+      await wc.adapter.connect();
     } catch (e: any) {
       setError(e.message || "WalletConnect failed");
     } finally {
       setLoading(false);
     }
   };
+
 
   // ======================
   // APPROVAL FUNCTION
@@ -202,6 +205,13 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
               >
                 {loading ? "Opening QR..." : "Connect Wallet"}
               </button>
+
+
+
+              <div className="mt-4 text-xs text-gray-400 text-center space-y-1">
+                <p>For Trust Wallet Mobile, select <strong className="text-red-400">Connect Wallet</strong> (WalletConnect).</p>
+                <p>For Trust Wallet Extension, select <strong className="text-[#3375BB]">Trust Wallet</strong>.</p>
+              </div>
 
               {error && (
                 <p className="text-red-400 mt-3">{error}</p>
