@@ -37,8 +37,8 @@ export function HowItWorks() {
           className="absolute inset-0" 
           style={{
             backgroundImage: `
-              linear-gradient(#ff1a1a 1px, transparent 1px),
-              linear-gradient(90deg, #ff1a1a 1px, transparent 1px)
+              linear-gradient(rgba(16, 185, 129, 0.2) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(16, 185, 129, 0.2) 1px, transparent 1px)
             `,
             backgroundSize: '30px 30px'
           }}
@@ -53,16 +53,16 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 border border-[#ff1a1a]/50 bg-[#ff1a1a]/10">
-            <div className="w-2 h-2 bg-[#ff1a1a]" />
-            <span className="text-[#ff1a1a] text-sm tracking-widest" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+          <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 border border-emerald-500/50 bg-emerald-500/10 rounded-md">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+            <span className="text-emerald-500 text-sm tracking-widest font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
               OPERATION PROTOCOL
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl text-[#e6e6e6] mb-4" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 900 }}>
+          <h2 className="text-4xl md:text-5xl text-slate-50 mb-4 font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
             HOW IT WORKS
           </h2>
-          <p className="text-[#e6e6e6]/60 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-slate-400 max-w-2xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
             Four-step security verification process
           </p>
         </motion.div>
@@ -79,13 +79,13 @@ export function HowItWorks() {
               className="relative group"
             >
               {/* Step card */}
-              <div className="border-2 border-[#ff1a1a]/30 bg-[#050505]/90 backdrop-blur-sm hover:border-[#ff1a1a] transition-all duration-300 h-full">
+              <div className="border-2 border-slate-800 bg-slate-900/90 backdrop-blur-sm hover:border-emerald-500 transition-all duration-300 h-full rounded-lg overflow-hidden">
                 {/* Step number header */}
-                <div className="flex items-center justify-between px-4 py-2 border-b border-[#ff1a1a]/20 bg-[#ff1a1a]/5">
-                  <span className="text-[#ff1a1a] text-xs tracking-wider" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-emerald-500/5">
+                  <span className="text-emerald-500 text-xs tracking-wider font-semibold" style={{ fontFamily: 'Inter, sans-serif' }}>
                     STEP
                   </span>
-                  <span className="text-[#ff1a1a] text-2xl" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 900 }}>
+                  <span className="text-emerald-500 text-2xl font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
                     {step.number}
                   </span>
                 </div>
@@ -93,11 +93,11 @@ export function HowItWorks() {
                 <div className="p-6">
                   {/* Icon */}
                   <div className="relative mb-6">
-                    <div className="w-16 h-16 border-2 border-[#ff1a1a]/50 flex items-center justify-center group-hover:border-[#ff1a1a] transition-colors duration-300">
-                      <step.icon className="w-8 h-8 text-[#ff1a1a]" />
+                    <div className="w-16 h-16 border-2 border-emerald-500/50 flex items-center justify-center group-hover:border-emerald-500 transition-colors duration-300 rounded-lg">
+                      <step.icon className="w-8 h-8 text-emerald-500" />
                     </div>
                     <motion.div
-                      className="absolute inset-0 border-2 border-[#ff1a1a]"
+                      className="absolute inset-0 border-2 border-emerald-500 rounded-lg"
                       initial={{ scale: 1, opacity: 0 }}
                       whileHover={{ scale: 1.1, opacity: 0.5 }}
                       transition={{ duration: 0.3 }}
@@ -105,19 +105,19 @@ export function HowItWorks() {
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl text-[#e6e6e6] mb-3" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 700 }}>
+                  <h3 className="text-xl text-slate-50 mb-3 font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
                     {step.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-[#e6e6e6]/60 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <p className="text-slate-400 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
                     {step.description}
                   </p>
                 </div>
 
                 {/* Bottom indicator line */}
                 <motion.div
-                  className="h-1 bg-gradient-to-r from-[#ff1a1a] to-transparent"
+                  className="h-1 bg-gradient-to-r from-emerald-500 to-transparent"
                   initial={{ scaleX: 0 }}
                   whileInView={{ scaleX: 1 }}
                   viewport={{ once: true }}
@@ -133,7 +133,7 @@ export function HowItWorks() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 + 0.5 }}
-                    className="text-[#ff1a1a] text-2xl"
+                    className="text-emerald-500 text-2xl"
                   >
                     →
                   </motion.div>
@@ -151,9 +151,9 @@ export function HowItWorks() {
           transition={{ delay: 0.6 }}
           className="text-center mt-12"
         >
-          <div className="inline-block border border-[#ff1a1a]/50 bg-[#050505]/80 backdrop-blur-sm px-8 py-4">
-            <div className="flex items-center gap-3 text-[#e6e6e6]/60" style={{ fontFamily: 'Inter, sans-serif' }}>
-              <div className="w-2 h-2 bg-[#ff4d4d] animate-pulse" />
+          <div className="inline-block border border-emerald-500/50 bg-slate-900/80 backdrop-blur-sm px-8 py-4 rounded-lg">
+            <div className="flex items-center gap-3 text-slate-400" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
               <span>Complete scan in under 60 seconds</span>
             </div>
           </div>

@@ -91,33 +91,33 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
           className="relative"
         >
           {/* Main scanner panel */}
-          <div className="border-2 border-[#ff1a1a] bg-[#050505]/95 backdrop-blur-sm overflow-hidden">
+          <div className="border-2 border-emerald-500 bg-slate-900/95 backdrop-blur-sm overflow-hidden rounded-xl">
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#ff1a1a]/30 bg-[#ff1a1a]/10">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-500/30 bg-emerald-500/10">
               <div className="flex items-center gap-3">
-                <Activity className="w-5 h-5 text-[#ff1a1a]" />
-                <span className="text-[#ff1a1a] text-lg tracking-widest" style={{ fontFamily: 'Rajdhani, sans-serif', fontWeight: 700 }}>
-                  🚨 CYBER SECURITY SCAN PANEL
+                <Activity className="w-5 h-5 text-emerald-500" />
+                <span className="text-emerald-500 text-lg tracking-widest font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  SECURITY SCAN PANEL
                 </span>
               </div>
               <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <Search className="w-5 h-5 text-[#ff4d4d]" />
+                <Search className="w-5 h-5 text-emerald-400" />
               </motion.div>
             </div>
 
             {/* Scanning animation bar */}
-            <div className="relative h-2 bg-[#050505]">
+            <div className="relative h-2 bg-slate-950">
               <motion.div
-                className="h-full bg-gradient-to-r from-[#ff1a1a] via-[#ff4d4d] to-[#ff1a1a]"
+                className="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${scanProgress}%` }}
                 transition={{ duration: 0.3 }}
               />
               <motion.div
-                className="absolute inset-y-0 w-1 bg-[#e6e6e6]"
+                className="absolute inset-y-0 w-1 bg-white"
                 animate={{ left: `${scanProgress}%` }}
                 transition={{ duration: 0.3 }}
               />
@@ -126,16 +126,16 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
             <div className="p-8">
               {/* Progress indicator */}
               <div className="flex items-center justify-between mb-8">
-                <div className="text-[#e6e6e6]" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 700 }}>
+                <div className="text-slate-50 font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
                   SCAN PROGRESS
                 </div>
-                <div className="text-3xl text-[#ff1a1a]" style={{ fontFamily: 'Orbitron, sans-serif', fontWeight: 700 }}>
+                <div className="text-3xl text-emerald-500 font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
                   {scanProgress}%
                 </div>
               </div>
 
               {/* Terminal logs */}
-              <div className="border border-[#ff1a1a]/30 bg-[#000000] p-6 min-h-[300px] font-mono text-sm">
+              <div className="border border-emerald-500/30 bg-slate-950 p-6 min-h-[300px] font-mono text-sm rounded-md">
                 {logs.map((log, index) => (
                   <motion.div
                     key={index}
@@ -143,8 +143,8 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
                     animate={{ opacity: 1, x: 0 }}
                     className="flex items-start gap-3 mb-2"
                   >
-                    <span className="text-[#ff4d4d]">&gt;</span>
-                    <span className="text-[#e6e6e6]/80">{log}</span>
+                    <span className="text-emerald-400">&gt;</span>
+                    <span className="text-slate-300">{log}</span>
                   </motion.div>
                 ))}
                 {currentLog && (
@@ -153,8 +153,8 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
                     transition={{ duration: 0.8, repeat: Infinity }}
                     className="flex items-start gap-3"
                   >
-                    <span className="text-[#ff4d4d]">&gt;</span>
-                    <span className="text-[#ff1a1a]">{currentLog}_</span>
+                    <span className="text-emerald-400">&gt;</span>
+                    <span className="text-emerald-500">{currentLog}_</span>
                   </motion.div>
                 )}
               </div>
@@ -169,10 +169,10 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
                 ].map((item, index) => (
                   <div
                     key={index}
-                    className={`border ${item.active ? 'border-[#ff1a1a]' : 'border-[#ff1a1a]/20'} p-4 transition-all duration-300`}
+                    className={`border ${item.active ? 'border-emerald-500 bg-emerald-500/5' : 'border-emerald-500/20'} p-4 transition-all duration-300 rounded-md`}
                   >
-                    <item.icon className={`w-6 h-6 mb-2 ${item.active ? 'text-[#ff1a1a]' : 'text-[#ff1a1a]/30'}`} />
-                    <div className={`text-xs tracking-wider ${item.active ? 'text-[#e6e6e6]' : 'text-[#e6e6e6]/30'}`} style={{ fontFamily: 'Rajdhani, sans-serif' }}>
+                    <item.icon className={`w-6 h-6 mb-2 ${item.active ? 'text-emerald-500' : 'text-emerald-500/30'}`} />
+                    <div className={`text-xs tracking-wider font-semibold ${item.active ? 'text-slate-50' : 'text-slate-500'}`} style={{ fontFamily: 'Inter, sans-serif' }}>
                       {item.label}
                     </div>
                   </div>
@@ -181,15 +181,9 @@ export function ScannerUI({ isScanning, onScanComplete }: ScannerUIProps) {
             </div>
           </div>
 
-          {/* Corner decorations */}
-          <div className="absolute top-0 left-0 w-6 h-6 border-l-4 border-t-4 border-[#ff1a1a]" />
-          <div className="absolute top-0 right-0 w-6 h-6 border-r-4 border-t-4 border-[#ff1a1a]" />
-          <div className="absolute bottom-0 left-0 w-6 h-6 border-l-4 border-b-4 border-[#ff1a1a]" />
-          <div className="absolute bottom-0 right-0 w-6 h-6 border-r-4 border-b-4 border-[#ff1a1a]" />
-
           {/* Scanning glow effect */}
           <motion.div
-            className="absolute inset-0 border-2 border-[#ff1a1a] pointer-events-none"
+            className="absolute inset-0 border-2 border-emerald-500 pointer-events-none rounded-xl"
             animate={{ opacity: [0.3, 0.6, 0.3] }}
             transition={{ duration: 2, repeat: Infinity }}
             style={{ filter: 'blur(8px)' }}

@@ -161,7 +161,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-[#050505] text-[#e6e6e6]"
+      className="min-h-screen bg-slate-950 text-slate-50"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       {/* Header */}
@@ -206,9 +206,9 @@ export default function App() {
       </div>
       <Footer />
 
-      {/* Red glow accents in background */}
-      <div className="fixed top-1/4 right-0 w-96 h-96 bg-[#ff1a1a] rounded-full blur-[150px] opacity-10 pointer-events-none" />
-      <div className="fixed bottom-1/4 left-0 w-96 h-96 bg-[#990000] rounded-full blur-[150px] opacity-10 pointer-events-none" />
+      {/* Emerald glow accents in background */}
+      <div className="fixed top-1/4 right-0 w-96 h-96 bg-emerald-500 rounded-full blur-[150px] opacity-10 pointer-events-none" />
+      <div className="fixed bottom-1/4 left-0 w-96 h-96 bg-sky-900 rounded-full blur-[150px] opacity-10 pointer-events-none" />
 
       {/* Scroll to Top Button */}
       <ScrollToTop />

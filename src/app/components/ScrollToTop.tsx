@@ -33,15 +33,15 @@ export function ScrollToTop() {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 w-12 h-12 border-2 border-[#ff1a1a] bg-[#050505]/90 backdrop-blur-sm hover:bg-[#ff1a1a] hover:border-[#ff4d4d] transition-all duration-300 group"
+          className="fixed bottom-8 right-8 z-50 w-12 h-12 border-2 border-emerald-500 bg-slate-900/90 backdrop-blur-sm hover:bg-emerald-500 hover:border-emerald-400 transition-all duration-300 group rounded-md"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <ChevronUp className="w-6 h-6 text-[#ff1a1a] group-hover:text-[#e6e6e6] mx-auto" />
+          <ChevronUp className="w-6 h-6 text-emerald-500 group-hover:text-slate-50 mx-auto" />
           
           {/* Pulse effect */}
           <motion.div
-            className="absolute inset-0 border-2 border-[#ff1a1a]"
+            className="absolute inset-0 border-2 border-emerald-500 rounded-md"
             animate={{ 
               scale: [1, 1.3, 1],
               opacity: [0.5, 0, 0.5]

