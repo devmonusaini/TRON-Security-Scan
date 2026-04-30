@@ -40,10 +40,10 @@
 /* Pulse glow effect */
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px #ff1a1a, 0 0 10px #ff1a1a;
+    box-shadow: 0 0 5px #10b981, 0 0 10px #10b981;
   }
   50% {
-    box-shadow: 0 0 20px #ff1a1a, 0 0 30px #ff1a1a;
+    box-shadow: 0 0 20px #10b981, 0 0 30px #10b981;
   }
 }
 
@@ -111,16 +111,16 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ff1a1a;
-  border: 2px solid #050505;
+  background: #10b981;
+  border: 2px solid #0f172a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff4d4d;
+  background: #34d399;
 }
 
 /* Typography improvements */
@@ -131,11 +131,11 @@ body {
 
 /* Selection styling */
 ::selection {
-  background-color: #ff1a1a;
-  color: #e6e6e6;
+  background-color: #10b981;
+  color: #ffffff;
 }
 
 ::-moz-selection {
-  background-color: #ff1a1a;
-  color: #e6e6e6;
+  background-color: #10b981;
+  color: #ffffff;
 }
