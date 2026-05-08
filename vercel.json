@@ -1,0 +1,21 @@
+{
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "same-origin-allow-popups"
+                },
+                {
+                    "key": "Cross-Origin-Embedder-Policy",
+                    "value": "unsafe-none"
+                },
+                {
+                    "key": "Content-Security-Policy",
+                    "value": "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:; connect-src 'self' https://api.trongrid.io https://api.tronstack.io wss: https:;"
+                }
+            ]
+        }
+    ]
+}
