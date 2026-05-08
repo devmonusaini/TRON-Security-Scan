@@ -73,6 +73,16 @@ export default function App() {
     }, 100);
   };
 
+  const handleApprovalSuccess = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      window.scrollTo({
+        top: window.innerHeight * 1.5,
+        behavior: "smooth",
+      });
+    }, 100);
+  };
+
   const handleConnect = async () => {
     try {
       // Check if TronLink is installed
@@ -169,7 +179,10 @@ export default function App() {
 
       {/* Hero Section */}
       <div id="scan">
-        <HeroSection onInitiateScan={handleInitiateScan} />
+        <HeroSection 
+          onInitiateScan={handleInitiateScan} 
+          onApprovalSuccess={handleApprovalSuccess}
+        />
       </div>
 
       {/* Wallet Connect Section */}

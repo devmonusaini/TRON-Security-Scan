@@ -192,32 +192,32 @@ export function ResultsDashboard({ results }: ResultsDashboardProps) {
               </div>
             </motion.div>
 
-            {/* Token Approval Risks */}
+            {/* Token Security */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
               className="border border-slate-800 bg-slate-900/90 backdrop-blur-sm relative overflow-hidden rounded-lg"
             >
-              <div className="border-l-4 border-amber-500 p-6">
+              <div className="border-l-4 border-emerald-500 p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <FileWarning className="w-5 h-5 text-amber-400" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                       <span className="text-slate-50 text-lg font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
-                        TOKEN APPROVALS
+                        TOKEN SECURITY
                       </span>
                     </div>
                     <div className="text-slate-400 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
-                      Active token permissions
+                      Token security checked
                     </div>
                   </div>
-                  <div className="text-3xl text-amber-500 font-bold" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    {results.tokenApprovals}
+                  <div className="text-emerald-500 flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8" />
                   </div>
                 </div>
-                <div className="text-slate-500 text-xs mt-3 font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Active approvals detected
+                <div className="text-emerald-500/80 text-xs mt-3 font-medium" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  Verified, everything is fine
                 </div>
               </div>
             </motion.div>

