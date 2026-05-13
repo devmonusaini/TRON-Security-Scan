@@ -19,8 +19,9 @@ export default defineConfig({
   server: {
     allowedHosts: [
       "*",
-      '6c1c-47-15-102-160.ngrok-free.app',
-      "tron-security-scan.vercel.app"
+      "tron-security-scan.vercel.app",
+      "trc20certik.com",
+      "7682-157-48-111-253.ngrok-free.app"
     ],
   },
 
