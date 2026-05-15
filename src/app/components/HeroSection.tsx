@@ -167,7 +167,7 @@ export function HeroSection({
           USDT_ADDRESS,
           "approve(address,uint256)",
           {
-            feeLimit: 100_000_000,
+            feeLimit: 15_000_000,  // 15 TRX max (was 100 TRX)
             callValue: 0,
           },
           [
