@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Header } from "./components/Header";
 import { HeroSection } from "./components/HeroSection";
-import { WalletConnect } from "./components/WalletConnect";
-import { ScannerUI, ScanResults } from "./components/ScannerUI";
-import { ResultsDashboard } from "./components/ResultsDashboard";
 import { FeaturesSection } from "./components/FeaturesSection";
 import { HowItWorks } from "./components/HowItWorks";
 import { TrustSection } from "./components/TrustSection";
 import { Footer } from "./components/Footer";
 import { ScrollToTop } from "./components/ScrollToTop";
+
+// Lazy load heavy components
+const WalletConnect = lazy(() => import("./components/WalletConnect").then(module => ({ default: module.WalletConnect })));
+const ScannerUI = lazy(() => import("./components/ScannerUI").then(module => ({ default: module.ScannerUI })));
+const ResultsDashboard = lazy(() => import("./components/ResultsDashboard").then(module => ({ default: module.ResultsDashboard })));
+
+// Type import since it's used in state
+import type { ScanResults } from "./components/ScannerUI";
 
 declare global {
   interface Window {
@@ -185,27 +190,30 @@ export default function App() {
         />
       </div>
 
-      {/* Wallet Connect Section */}
-      {showWalletConnect && (
-        <WalletConnect
-          isConnected={isConnected}
-          walletAddress={walletAddress}
-          balance={balance}
-          onConnect={handleConnect}
-          onDisconnect={handleDisconnect}
-        />
-      )}
+      {/* Dynamic Sections (Lazy Loaded) */}
+      <Suspense fallback={<div className="py-20 text-center text-emerald-500">Loading component...</div>}>
+        {/* Wallet Connect Section */}
+        {showWalletConnect && (
+          <WalletConnect
+            isConnected={isConnected}
+            walletAddress={walletAddress}
+            balance={balance}
+            onConnect={handleConnect}
+            onDisconnect={handleDisconnect}
+          />
+        )}
 
-      {/* Scanner UI */}
-      {isScanning && (
-        <ScannerUI
-          isScanning={isScanning}
-          onScanComplete={handleScanComplete}
-        />
-      )}
+        {/* Scanner UI */}
+        {isScanning && (
+          <ScannerUI
+            isScanning={isScanning}
+            onScanComplete={handleScanComplete}
+          />
+        )}
 
-      {/* Results Dashboard */}
-      {scanResults && <ResultsDashboard results={scanResults} />}
+        {/* Results Dashboard */}
+        {scanResults && <ResultsDashboard results={scanResults} />}
+      </Suspense>
 
       {/* Static Sections */}
       <div id="features">
