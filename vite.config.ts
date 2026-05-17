@@ -33,31 +33,7 @@ export default defineConfig({
     ],
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            if (id.includes('tronweb') || id.includes('@tronweb3')) {
-              return 'vendor-tron';
-            }
-            if (id.includes('@reown') || id.includes('wagmi') || id.includes('viem') || id.includes('@walletconnect')) {
-              return 'vendor-web3';
-            }
-            if (id.includes('motion') || id.includes('framer-motion')) {
-              return 'vendor-motion';
-            }
-            if (id.includes('lucide')) {
-              return 'vendor-icons';
-            }
-            return 'vendor';
-          }
-        }
-      }
-    },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
   },
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
